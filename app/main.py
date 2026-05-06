@@ -11,12 +11,13 @@ from src.ingestion import (
     read_txt_feedback,
     save_normalized_data,
 )
+from src.rag import ResidentRAGEngine
 
 
 st.set_page_config(page_title="ResidentOps Copilot", layout="wide")
 
 st.title("AI Resident Experience + Operations Copilot")
-st.caption("Step 3: ingestion + classification + urgency scoring")
+st.caption("Step 4: ingestion + classification + RAG question answering")
 
 with st.expander("Unified schema (normalized output)"):
     st.code(
@@ -120,3 +121,36 @@ with chart_col2:
         px.bar(urgency_counts, x="urgency", y="count", title="Urgency Distribution"),
         use_container_width=True,
     )
+
+st.markdown("### Ask your data (RAG)")
+use_ollama = st.toggle(
+    "Use Ollama for generated answers (requires local Ollama model)",
+    value=False,
+)
+question = st.text_input(
+    "Manager question",
+    value="What are residents complaining about most this month?",
+)
+
+if question.strip():
+    rag_engine = ResidentRAGEngine(classified)
+    answer, hits = rag_engine.answer(question, top_k=5, use_ollama=use_ollama)
+
+    st.markdown("#### Answer")
+    st.write(answer)
+
+    st.markdown("#### Retrieved evidence")
+    evidence_df = pd.DataFrame(
+        [
+            {
+                "source_id": hit.source_id,
+                "category": hit.category,
+                "urgency": hit.urgency,
+                "score": round(hit.score, 4),
+                "text": hit.text,
+            }
+            for hit in hits
+        ]
+    )
+    st.dataframe(evidence_df, use_container_width=True)
+    st.caption(f"Embedding mode: `{rag_engine.embedding_mode}`")

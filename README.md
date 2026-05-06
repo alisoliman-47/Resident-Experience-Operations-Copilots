@@ -11,11 +11,11 @@ Local AI system for property/community managers to analyze resident feedback, pr
 2. **Data ingestion**
    - Upload CSV/TXT/PDF
    - Normalize into a unified schema
-3. **Classification + urgency scoring (current step)**
+3. **Classification + urgency scoring**
    - Category classifier
    - Sentiment analysis
    - Priority ranking
-4. **RAG question answering**
+4. **RAG question answering (current step)**
    - Embeddings + vector store
    - Retrieval and grounded response generation
 5. **Dashboard + weekly summary**
@@ -52,6 +52,15 @@ After ingestion, the app now also:
 - Assigns urgency (`low`, `medium`, `high`, `urgent`)
 - Ranks records by urgency to create a manager priority queue
 - Saves classified output to `data/processed/<filename>_classified_normalized.csv`
+
+## Step 4 demo
+
+The app now includes an "Ask your data" panel that:
+- Builds a local retrieval index from classified feedback
+- Retrieves top relevant evidence for a manager question
+- Returns a grounded answer with recommendations
+- Optionally uses local `Ollama` for generated responses
+- Falls back to deterministic summarization when no LLM is available
 
 ## Repository layout
 
