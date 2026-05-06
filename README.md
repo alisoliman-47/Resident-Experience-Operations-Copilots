@@ -15,10 +15,10 @@ Local AI system for property/community managers to analyze resident feedback, pr
    - Category classifier
    - Sentiment analysis
    - Priority ranking
-4. **RAG question answering (current step)**
+4. **RAG question answering**
    - Embeddings + vector store
    - Retrieval and grounded response generation
-5. **Dashboard + weekly summary**
+5. **Dashboard + weekly summary (current step)**
    - Ops trends, urgent queue, recurring issues
    - Auto-generated manager summary
 6. **Hardening**
@@ -61,6 +61,14 @@ The app now includes an "Ask your data" panel that:
 - Returns a grounded answer with recommendations
 - Optionally uses local `Ollama` for generated responses
 - Falls back to deterministic summarization when no LLM is available
+
+## Step 5 demo
+
+The app now adds operations reporting:
+- Auto-generated weekly manager summary paragraph
+- Recurring issue detection (repeated complaint patterns)
+- Action recommendation list based on urgency, category concentration, and recurrence
+- Existing analytics and RAG outputs unified into one manager workflow
 
 ## Repository layout
 

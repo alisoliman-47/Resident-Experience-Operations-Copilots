@@ -11,13 +11,14 @@ from src.ingestion import (
     read_txt_feedback,
     save_normalized_data,
 )
+from src.operations_summary import build_weekly_summary
 from src.rag import ResidentRAGEngine
 
 
 st.set_page_config(page_title="ResidentOps Copilot", layout="wide")
 
 st.title("AI Resident Experience + Operations Copilot")
-st.caption("Step 4: ingestion + classification + RAG question answering")
+st.caption("Step 5: dashboard + weekly summary + recommendations")
 
 with st.expander("Unified schema (normalized output)"):
     st.code(
@@ -154,3 +155,17 @@ if question.strip():
     )
     st.dataframe(evidence_df, use_container_width=True)
     st.caption(f"Embedding mode: `{rag_engine.embedding_mode}`")
+
+st.markdown("### Weekly manager summary")
+weekly_summary = build_weekly_summary(classified)
+st.info(weekly_summary.summary_text)
+
+st.markdown("#### Recurring issues")
+if weekly_summary.recurring_issues.empty:
+    st.write("No recurring issues found yet (minimum 2 repeated mentions required).")
+else:
+    st.dataframe(weekly_summary.recurring_issues, use_container_width=True)
+
+st.markdown("#### Recommended actions")
+for recommendation in weekly_summary.recommendations:
+    st.write(f"- {recommendation}")
