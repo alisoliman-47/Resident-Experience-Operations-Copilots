@@ -18,10 +18,10 @@ Local AI system for property/community managers to analyze resident feedback, pr
 4. **RAG question answering**
    - Embeddings + vector store
    - Retrieval and grounded response generation
-5. **Dashboard + weekly summary (current step)**
+5. **Dashboard + weekly summary**
    - Ops trends, urgent queue, recurring issues
    - Auto-generated manager summary
-6. **Hardening**
+6. **Hardening (current step)**
    - Logging/metrics
    - Prompt safety + basic PII masking
 
@@ -69,6 +69,14 @@ The app now adds operations reporting:
 - Recurring issue detection (repeated complaint patterns)
 - Action recommendation list based on urgency, category concentration, and recurrence
 - Existing analytics and RAG outputs unified into one manager workflow
+
+## Step 6 demo
+
+Hardening features now included:
+- Basic PII masking during ingestion (email, phone, SSN patterns)
+- Structured event logging for ingestion and RAG execution
+- RAG grounding confidence check with warning for low-evidence answers
+- Guardrail behavior that surfaces reliability signals in the UI
 
 ## Repository layout
 

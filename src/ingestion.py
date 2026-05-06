@@ -36,6 +36,10 @@ INPUT_COLUMN_ALIASES = {
     "text": ["text", "message", "feedback", "description", "comment", "content"],
 }
 
+EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+PHONE_PATTERN = re.compile(r"\b(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?){2}\d{4}\b")
+SSN_PATTERN = re.compile(r"\b\d{3}-\d{2}-\d{4}\b")
+
 
 @dataclass
 class IngestionResult:
@@ -53,6 +57,21 @@ def _find_alias_column(columns: list[str], aliases: list[str]) -> str | None:
         if alias in columns:
             return alias
     return None
+
+
+def mask_pii(text: str) -> tuple[str, bool]:
+    masked = text
+    replaced = False
+    for pattern, replacement in (
+        (EMAIL_PATTERN, "[REDACTED_EMAIL]"),
+        (PHONE_PATTERN, "[REDACTED_PHONE]"),
+        (SSN_PATTERN, "[REDACTED_SSN]"),
+    ):
+        updated = pattern.sub(replacement, masked)
+        if updated != masked:
+            replaced = True
+        masked = updated
+    return masked, replaced
 
 
 def normalize_feedback_dataframe(
@@ -78,6 +97,17 @@ def normalize_feedback_dataframe(
 
     # Ensure text is string and strip whitespace.
     output_df["text"] = output_df["text"].fillna("").astype(str).str.strip()
+
+    # Basic PII masking for common personal data patterns.
+    pii_masked_count = 0
+    masked_texts: list[str] = []
+    for value in output_df["text"]:
+        masked, changed = mask_pii(value)
+        pii_masked_count += int(changed)
+        masked_texts.append(masked)
+    output_df["text"] = masked_texts
+    if pii_masked_count:
+        warnings.append(f"PII masking applied to {pii_masked_count} rows.")
 
     # Drop fully empty text rows because they cannot be used downstream.
     before_count = len(output_df)

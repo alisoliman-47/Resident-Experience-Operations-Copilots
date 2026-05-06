@@ -18,6 +18,13 @@ class RetrievalHit:
     score: float
 
 
+@dataclass
+class AnswerQuality:
+    grounded: bool
+    confidence: float
+    warning: str
+
+
 class ResidentRAGEngine:
     def __init__(self, df: pd.DataFrame) -> None:
         self.df = df.reset_index(drop=True).copy()
@@ -71,10 +78,26 @@ class ResidentRAGEngine:
             )
         return hits
 
-    def answer(self, question: str, top_k: int = 5, use_ollama: bool = False) -> tuple[str, list[RetrievalHit]]:
+    def evaluate_answer_quality(self, answer: str, hits: list[RetrievalHit]) -> AnswerQuality:
+        if not hits:
+            return AnswerQuality(grounded=False, confidence=0.0, warning="No retrieved evidence.")
+        evidence_text = " ".join(h.text.lower() for h in hits)
+        answer_tokens = set(answer.lower().split())
+        if not answer_tokens:
+            return AnswerQuality(grounded=False, confidence=0.0, warning="Empty answer.")
+        overlap = sum(1 for token in answer_tokens if token in evidence_text)
+        confidence = overlap / len(answer_tokens)
+        grounded = confidence >= 0.15
+        warning = "" if grounded else "Low grounding score: answer may include unsupported claims."
+        return AnswerQuality(grounded=grounded, confidence=round(confidence, 3), warning=warning)
+
+    def answer(
+        self, question: str, top_k: int = 5, use_ollama: bool = False
+    ) -> tuple[str, list[RetrievalHit], AnswerQuality]:
         hits = self.retrieve(question, top_k=top_k)
         if not hits:
-            return "No relevant feedback found for this question.", []
+            quality = AnswerQuality(grounded=False, confidence=0.0, warning="No evidence retrieved.")
+            return "No relevant feedback found for this question.", [], quality
 
         context_lines = [
             f"- ({h.urgency.upper()} | {h.category}) {h.text}" for h in hits
@@ -96,7 +119,11 @@ class ResidentRAGEngine:
                     model="llama3.1",
                     messages=[{"role": "user", "content": prompt}],
                 )
-                return response["message"]["content"], hits
+                answer = response["message"]["content"]
+                quality = self.evaluate_answer_quality(answer, hits)
+                if not quality.grounded:
+                    answer += "\n\nNote: This answer has low evidence grounding confidence."
+                return answer, hits, quality
             except Exception:
                 pass
 
@@ -115,4 +142,5 @@ class ResidentRAGEngine:
             "- Publish resident communication with timeline and next steps.\n"
             "- Track whether complaint volume decreases over the next week."
         )
-        return answer, hits
+        quality = self.evaluate_answer_quality(answer, hits)
+        return answer, hits, quality

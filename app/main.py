@@ -13,12 +13,13 @@ from src.ingestion import (
 )
 from src.operations_summary import build_weekly_summary
 from src.rag import ResidentRAGEngine
+from src.telemetry import log_event
 
 
 st.set_page_config(page_title="ResidentOps Copilot", layout="wide")
 
 st.title("AI Resident Experience + Operations Copilot")
-st.caption("Step 5: dashboard + weekly summary + recommendations")
+st.caption("Step 6: hardening (PII masking, logging, RAG guardrails)")
 
 with st.expander("Unified schema (normalized output)"):
     st.code(
@@ -64,6 +65,13 @@ result = normalize_feedback_dataframe(
     df=raw_df,
     default_source_type=source_type,
     default_property_id=property_id,
+)
+log_event(
+    "ingestion_completed",
+    rows=len(result.normalized_df),
+    warnings_count=len(result.warnings),
+    source_type=source_type,
+    property_id=property_id,
 )
 
 st.markdown("### Normalized data preview")
@@ -135,7 +143,15 @@ question = st.text_input(
 
 if question.strip():
     rag_engine = ResidentRAGEngine(classified)
-    answer, hits = rag_engine.answer(question, top_k=5, use_ollama=use_ollama)
+    answer, hits, quality = rag_engine.answer(question, top_k=5, use_ollama=use_ollama)
+    log_event(
+        "rag_answer_generated",
+        question=question,
+        hits=len(hits),
+        grounded=quality.grounded,
+        confidence=quality.confidence,
+        embedding_mode=rag_engine.embedding_mode,
+    )
 
     st.markdown("#### Answer")
     st.write(answer)
@@ -155,6 +171,10 @@ if question.strip():
     )
     st.dataframe(evidence_df, use_container_width=True)
     st.caption(f"Embedding mode: `{rag_engine.embedding_mode}`")
+    if quality.grounded:
+        st.success(f"Grounding check passed (confidence={quality.confidence}).")
+    else:
+        st.warning(f"{quality.warning} (confidence={quality.confidence})")
 
 st.markdown("### Weekly manager summary")
 weekly_summary = build_weekly_summary(classified)
