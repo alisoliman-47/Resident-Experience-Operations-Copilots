@@ -93,12 +93,14 @@ and use the default TF-IDF mode unless you specifically want to test transformer
 - `app/` Streamlit UI
 - `src/` backend logic and pipelines
 - `data/` local data (ignored except placeholders)
-- `docs/` architecture notes and slide assets
+- `docs/` architecture notes and supplementary diagrams
 - `tests/` test suite
 
-## Presentation assets
+## Architecture and design references
 
-### Slide 4: Architecture diagram
+High-level diagrams and tables for technical documentation. Render Mermaid in GitHub or VS Code, or export to images as needed.
+
+### System architecture
 
 ```mermaid
 flowchart LR
@@ -117,7 +119,7 @@ flowchart LR
     K -.-> G
 ```
 
-### Slide 6: Pipeline snippet (ingestion + privacy)
+### Ingestion and privacy pipeline
 
 ```mermaid
 flowchart TD
@@ -129,22 +131,7 @@ flowchart TD
     F --> G[Downstream: classification + RAG]
 ```
 
-### Slide 9: Where to get full KPI/chart screenshot
-
-1. Run app from repo root:
-   - `source .venv/bin/activate`
-   - `streamlit run app/main.py`
-2. Upload `data/sample_resident_feedback.csv`.
-3. Scroll until all dashboard pieces are visible:
-   - KPI cards (`Total records`, `Urgent issues`, `High + Urgent`)
-   - `Issue Categories` chart
-   - `Urgency Distribution` chart
-4. Take a full-page screenshot in browser:
-   - Chrome menu -> `More Tools` -> `Developer Tools`
-   - `Cmd+Shift+P` -> type `screenshot`
-   - choose `Capture full size screenshot`
-
-### Slide 10: Failure mode -> mitigation table
+### Failure modes and mitigations
 
 | Failure mode | Likely cause | Mitigation in current design |
 |---|---|---|
@@ -156,7 +143,7 @@ flowchart TD
 | LLM unavailable/offline | Ollama/model not installed | Deterministic fallback summary response |
 | Potential hallucination | Generated text not grounded enough | Retrieval evidence table + grounding confidence warning |
 
-### Slide 11: Decision matrix
+### Design tradeoffs
 
 | Decision area | Chosen for MVP | Why this choice | Tradeoff accepted | Production evolution |
 |---|---|---|---|---|
@@ -167,7 +154,7 @@ flowchart TD
 | Generation layer | Optional Ollama | Offline/local narrative generation | Model quality depends on local setup | Managed model endpoint + guardrails |
 | Reliability approach | Fallbacks + warnings | Demo resilience under failures | Not full SLO monitoring stack | Metrics, alerting, and tracing |
 
-### Slide 12: MVP -> Production roadmap diagram
+### MVP to production roadmap
 
 ```mermaid
 flowchart LR
