@@ -1,0 +1,11 @@
+streamlit
+pandas
+plotly
+scikit-learn
+sentence-transformers
+chromadb
+ollama
+python-dotenv
+fastapi
+uvicorn
+pytest
