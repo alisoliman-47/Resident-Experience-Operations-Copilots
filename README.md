@@ -8,10 +8,10 @@ Local AI system for property/community managers to analyze resident feedback, pr
    - Baseline repository structure
    - Streamlit starter app
    - Dependency setup
-2. **Data ingestion (current step)**
+2. **Data ingestion**
    - Upload CSV/TXT/PDF
    - Normalize into a unified schema
-3. **Classification + urgency scoring**
+3. **Classification + urgency scoring (current step)**
    - Category classifier
    - Sentiment analysis
    - Priority ranking
@@ -43,6 +43,15 @@ The ingestion flow will:
 - Normalize to the unified schema
 - Show warnings for missing/invalid fields
 - Save output to `data/processed/<filename>_normalized.csv`
+
+## Step 3 demo
+
+After ingestion, the app now also:
+- Classifies each record into an issue category
+- Estimates sentiment (positive/neutral/negative)
+- Assigns urgency (`low`, `medium`, `high`, `urgent`)
+- Ranks records by urgency to create a manager priority queue
+- Saves classified output to `data/processed/<filename>_classified_normalized.csv`
 
 ## Repository layout
 

@@ -1,8 +1,10 @@
 from pathlib import Path
 
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
+from src.classification import enrich_with_classification
 from src.ingestion import (
     SOURCE_TYPE_OPTIONS,
     normalize_feedback_dataframe,
@@ -14,7 +16,7 @@ from src.ingestion import (
 st.set_page_config(page_title="ResidentOps Copilot", layout="wide")
 
 st.title("AI Resident Experience + Operations Copilot")
-st.caption("Step 2: data ingestion and normalization")
+st.caption("Step 3: ingestion + classification + urgency scoring")
 
 with st.expander("Unified schema (normalized output)"):
     st.code(
@@ -76,3 +78,45 @@ output_path = save_normalized_data(
     stem=Path(uploaded_file.name).stem,
 )
 st.success(f"Saved normalized file to `{output_path}`")
+
+classified = enrich_with_classification(result.normalized_df).enriched_df
+classified_output_path = save_normalized_data(
+    classified,
+    output_dir=Path("data/processed"),
+    stem=f"{Path(uploaded_file.name).stem}_classified",
+)
+
+st.markdown("### Priority queue (classified)")
+priority_cols = ["source_id", "timestamp", "category", "sentiment", "urgency", "text"]
+st.dataframe(classified[priority_cols].head(30), use_container_width=True)
+st.success(f"Saved classified file to `{classified_output_path}`")
+
+col_a, col_b, col_c = st.columns(3)
+with col_a:
+    st.metric("Total records", int(len(classified)))
+with col_b:
+    st.metric("Urgent issues", int((classified["urgency"] == "urgent").sum()))
+with col_c:
+    st.metric("High + Urgent", int(classified["urgency"].isin(["high", "urgent"]).sum()))
+
+chart_col1, chart_col2 = st.columns(2)
+with chart_col1:
+    cat_counts = classified["category"].value_counts().reset_index()
+    cat_counts.columns = ["category", "count"]
+    st.plotly_chart(
+        px.bar(cat_counts, x="category", y="count", title="Issue Categories"),
+        use_container_width=True,
+    )
+
+with chart_col2:
+    urgency_counts = classified["urgency"].value_counts().reset_index()
+    urgency_counts.columns = ["urgency", "count"]
+    urgency_order = ["low", "medium", "high", "urgent"]
+    urgency_counts["urgency"] = pd.Categorical(
+        urgency_counts["urgency"], categories=urgency_order, ordered=True
+    )
+    urgency_counts = urgency_counts.sort_values("urgency")
+    st.plotly_chart(
+        px.bar(urgency_counts, x="urgency", y="count", title="Urgency Distribution"),
+        use_container_width=True,
+    )
