@@ -95,3 +95,88 @@ and use the default TF-IDF mode unless you specifically want to test transformer
 - `data/` local data (ignored except placeholders)
 - `docs/` architecture notes and slide assets
 - `tests/` test suite
+
+## Presentation assets
+
+### Slide 4: Architecture diagram
+
+```mermaid
+flowchart LR
+    A[Resident Signals<br/>CSV/TXT uploads] --> B[Ingestion Layer<br/>normalize + validate + PII masking]
+    B --> C[(Structured Store<br/>normalized/classified CSV)]
+    B --> D[Classification Layer<br/>category + sentiment + urgency]
+    D --> E[Priority Queue + KPI Aggregates]
+    D --> F[Retrieval Index<br/>TF-IDF default]
+    F --> G[RAG Service<br/>retrieve top-k + answer]
+    G --> H[Grounding Check<br/>confidence + warning]
+    E --> I[Streamlit Dashboard]
+    H --> I
+    D --> J[Weekly Summary + Recommendations]
+    J --> I
+    K[Telemetry Logger<br/>JSON events] -.-> B
+    K -.-> G
+```
+
+### Slide 6: Pipeline snippet (ingestion + privacy)
+
+```mermaid
+flowchart TD
+    A[Raw Input<br/>CSV/TXT] --> B[Column Alias Mapping]
+    B --> C[Schema Normalization<br/>source_id, property_id, building_id, unit_id, timestamp, text]
+    C --> D[Data Quality Checks<br/>missing cols, empty text, bad timestamps]
+    D --> E[PII Masking<br/>email, phone, SSN]
+    E --> F[Clean Canonical Output]
+    F --> G[Downstream: classification + RAG]
+```
+
+### Slide 9: Where to get full KPI/chart screenshot
+
+1. Run app from repo root:
+   - `source .venv/bin/activate`
+   - `streamlit run app/main.py`
+2. Upload `data/sample_resident_feedback.csv`.
+3. Scroll until all dashboard pieces are visible:
+   - KPI cards (`Total records`, `Urgent issues`, `High + Urgent`)
+   - `Issue Categories` chart
+   - `Urgency Distribution` chart
+4. Take a full-page screenshot in browser:
+   - Chrome menu -> `More Tools` -> `Developer Tools`
+   - `Cmd+Shift+P` -> type `screenshot`
+   - choose `Capture full size screenshot`
+
+### Slide 10: Failure mode -> mitigation table
+
+| Failure mode | Likely cause | Mitigation in current design |
+|---|---|---|
+| Missing required columns | Inconsistent source schemas | Alias mapping + warnings + null-safe defaults |
+| Invalid timestamps | Free-form or bad date formats | `to_datetime(..., errors="coerce")` + warning count |
+| Empty/non-actionable rows | Blank feedback submissions | Drop empty text rows before downstream processing |
+| PII leakage risk | Raw resident text may include personal data | Regex masking for email/phone/SSN at ingestion |
+| Embedding dependency issues | Optional heavy libs unavailable locally | TF-IDF default fallback; opt-in transformer embeddings |
+| LLM unavailable/offline | Ollama/model not installed | Deterministic fallback summary response |
+| Potential hallucination | Generated text not grounded enough | Retrieval evidence table + grounding confidence warning |
+
+### Slide 11: Decision matrix
+
+| Decision area | Chosen for MVP | Why this choice | Tradeoff accepted | Production evolution |
+|---|---|---|---|---|
+| App framework | Streamlit | Fast end-to-end demo and iteration | Less control than custom frontend | Move to React/Next.js + API |
+| Retrieval engine | TF-IDF default | Stable local setup, zero model bootstrap | Lower semantic recall vs embeddings | Add robust embedding service |
+| Classification logic | Rules + keyword heuristics | Transparent and easy to debug | Limited nuance/recall | Supervised model + eval pipeline |
+| Storage approach | Local CSV outputs | Simple and portable for interview | Weak concurrency/querying | PostgreSQL + pgvector |
+| Generation layer | Optional Ollama | Offline/local narrative generation | Model quality depends on local setup | Managed model endpoint + guardrails |
+| Reliability approach | Fallbacks + warnings | Demo resilience under failures | Not full SLO monitoring stack | Metrics, alerting, and tracing |
+
+### Slide 12: MVP -> Production roadmap diagram
+
+```mermaid
+flowchart LR
+    A[Phase 1: MVP Prototype<br/>Local ingestion, classification, RAG, dashboard] --> B[Phase 2: Pilot Deployment<br/>API layer, DB backend, tenant isolation, auth]
+    B --> C[Phase 3: Production Scale<br/>event-driven ingestion, model eval loops, observability + alerts]
+
+    A1[Success criteria:<br/>usable triage + explainable outputs]:::note --> A
+    B1[Success criteria:<br/>multi-user reliability + secure access]:::note --> B
+    C1[Success criteria:<br/>SLOs, measurable model quality, scalable ops]:::note --> C
+
+    classDef note fill:#f5f7ff,stroke:#9aa5ff,color:#1f2a44;
+```
