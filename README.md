@@ -4,11 +4,11 @@ Local AI system for property/community managers to analyze resident feedback, pr
 
 ## Step-by-step build plan
 
-1. **Project scaffold (current step)**
+1. **Project scaffold**
    - Baseline repository structure
    - Streamlit starter app
    - Dependency setup
-2. **Data ingestion**
+2. **Data ingestion (current step)**
    - Upload CSV/TXT/PDF
    - Normalize into a unified schema
 3. **Classification + urgency scoring**
@@ -33,6 +33,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app/main.py
 ```
+
+## Step 2 demo
+
+Run the app, then upload `data/sample_resident_feedback.csv`.
+
+The ingestion flow will:
+- Load source data
+- Normalize to the unified schema
+- Show warnings for missing/invalid fields
+- Save output to `data/processed/<filename>_normalized.csv`
 
 ## Repository layout
 
