@@ -34,6 +34,12 @@ pip install -r requirements.txt
 streamlit run app/main.py
 ```
 
+Run each command on its own line. If you prefer one command, use:
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && streamlit run app/main.py
+```
+
 ## Step 2 demo
 
 Run the app, then upload `data/sample_resident_feedback.csv`.
@@ -77,6 +83,9 @@ Hardening features now included:
 - Structured event logging for ingestion and RAG execution
 - RAG grounding confidence check with warning for low-evidence answers
 - Guardrail behavior that surfaces reliability signals in the UI
+
+Note: for the most stable local demo, keep sentence-transformers embeddings disabled in the UI
+and use the default TF-IDF mode unless you specifically want to test transformer embeddings.
 
 ## Repository layout
 

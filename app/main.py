@@ -1,4 +1,9 @@
 from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 import pandas as pd
 import plotly.express as px
@@ -132,6 +137,10 @@ with chart_col2:
     )
 
 st.markdown("### Ask your data (RAG)")
+use_sentence_transformers = st.toggle(
+    "Use sentence-transformers embeddings (may load heavier dependencies)",
+    value=False,
+)
 use_ollama = st.toggle(
     "Use Ollama for generated answers (requires local Ollama model)",
     value=False,
@@ -142,7 +151,10 @@ question = st.text_input(
 )
 
 if question.strip():
-    rag_engine = ResidentRAGEngine(classified)
+    rag_engine = ResidentRAGEngine(
+        classified,
+        use_sentence_transformers=use_sentence_transformers,
+    )
     answer, hits, quality = rag_engine.answer(question, top_k=5, use_ollama=use_ollama)
     log_event(
         "rag_answer_generated",

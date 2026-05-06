@@ -26,9 +26,10 @@ class AnswerQuality:
 
 
 class ResidentRAGEngine:
-    def __init__(self, df: pd.DataFrame) -> None:
+    def __init__(self, df: pd.DataFrame, use_sentence_transformers: bool = False) -> None:
         self.df = df.reset_index(drop=True).copy()
         self.texts = self.df["text"].fillna("").astype(str).tolist()
+        self.use_sentence_transformers = use_sentence_transformers
         self.embedding_mode = "tfidf"
         self._sentence_model: Any | None = None
         self._tfidf_vectorizer: TfidfVectorizer | None = None
@@ -36,16 +37,17 @@ class ResidentRAGEngine:
         self._build_index()
 
     def _build_index(self) -> None:
-        # Prefer sentence-transformers embeddings; fallback to TF-IDF if unavailable.
-        try:
-            from sentence_transformers import SentenceTransformer  # type: ignore
+        # Default to TF-IDF for reliability. Opt-in to sentence-transformers when desired.
+        if self.use_sentence_transformers:
+            try:
+                from sentence_transformers import SentenceTransformer  # type: ignore
 
-            self._sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
-            self._doc_vectors = self._sentence_model.encode(self.texts, normalize_embeddings=True)
-            self.embedding_mode = "sentence-transformers"
-            return
-        except Exception:
-            self.embedding_mode = "tfidf"
+                self._sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
+                self._doc_vectors = self._sentence_model.encode(self.texts, normalize_embeddings=True)
+                self.embedding_mode = "sentence-transformers"
+                return
+            except Exception:
+                self.embedding_mode = "tfidf"
 
         self._tfidf_vectorizer = TfidfVectorizer(stop_words="english")
         self._doc_vectors = self._tfidf_vectorizer.fit_transform(self.texts)
