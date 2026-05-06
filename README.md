@@ -49,6 +49,7 @@ The ingestion flow will:
 - Normalize to the unified schema
 - Show warnings for missing/invalid fields
 - Save output to `data/processed/<filename>_normalized.csv`
+- Includes `building_id` in normalized output so you can analyze by building/tower
 
 ## Step 3 demo
 

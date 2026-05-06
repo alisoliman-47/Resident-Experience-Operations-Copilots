@@ -1,6 +1,9 @@
-request_id,property,unit,resident,created_at,description
-1001,aker_demo_property_001,1204,R-2001,2026-05-01 10:22:00,Water leak from ceiling in bathroom.
-1002,aker_demo_property_001,0902,R-1842,2026-05-02 08:15:00,Loud noise from neighbors after midnight.
-1003,aker_demo_property_001,0711,R-2204,2026-05-02 17:40:00,Gym treadmills need maintenance.
-1004,aker_demo_property_001,0310,R-1755,2026-05-03 09:05:00,Parking gate was stuck for 20 minutes.
-1005,aker_demo_property_001,1401,R-2991,2026-05-03 19:11:00,Great community event but more seating would help.
+request_id,property_id,building_id,unit_id,resident_id,created_at,channel,event_name,rating,description
+1001,aker_demo_property_001,BLDG-A,1204,R-2001,2026-05-01 10:22:00,maintenance_portal,,1,Water leak from ceiling in bathroom.
+1002,aker_demo_property_001,BLDG-A,0902,R-1842,2026-05-02 08:15:00,resident_app,,2,Loud noise from neighbors after midnight.
+1003,aker_demo_property_001,BLDG-B,0711,R-2204,2026-05-02 17:40:00,review,,3,Gym treadmills need maintenance.
+1004,aker_demo_property_001,BLDG-C,0310,R-1755,2026-05-03 09:05:00,call_center,,2,Parking gate was stuck for 20 minutes.
+1005,aker_demo_property_001,BLDG-B,1401,R-2991,2026-05-03 19:11:00,event_feedback,Spring Mixer,4,Great community event but more seating would help.
+1006,aker_demo_property_001,BLDG-A,2203,R-3021,2026-05-04 07:55:00,resident_app,,1,No hot water in unit since early morning.
+1007,aker_demo_property_001,BLDG-C,1108,R-1470,2026-05-04 18:21:00,email,,2,Repeated trash odor in hallway near elevator.
+1008,aker_demo_property_001,BLDG-B,0614,R-4088,2026-05-05 12:45:00,resident_app,,5,Love the new yoga class and trainer.

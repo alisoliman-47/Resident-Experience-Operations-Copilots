@@ -12,6 +12,7 @@ REQUIRED_OUTPUT_COLUMNS = [
     "source_type",
     "source_id",
     "property_id",
+    "building_id",
     "unit_id",
     "resident_id",
     "timestamp",
@@ -29,7 +30,8 @@ SOURCE_TYPE_OPTIONS = [
 
 INPUT_COLUMN_ALIASES = {
     "source_id": ["source_id", "id", "request_id", "feedback_id"],
-    "property_id": ["property_id", "property", "building_id", "community_id"],
+    "property_id": ["property_id", "property", "community_id"],
+    "building_id": ["building_id", "building", "tower_id"],
     "unit_id": ["unit_id", "unit", "apartment", "apt"],
     "resident_id": ["resident_id", "resident", "tenant_id", "user_id"],
     "timestamp": ["timestamp", "created_at", "date", "submitted_at"],
@@ -86,6 +88,7 @@ def normalize_feedback_dataframe(
     output_df = pd.DataFrame(index=working_df.index)
     output_df["source_type"] = default_source_type
     output_df["property_id"] = default_property_id
+    output_df["building_id"] = None
 
     for target_col, aliases in INPUT_COLUMN_ALIASES.items():
         found_col = _find_alias_column(columns, aliases)

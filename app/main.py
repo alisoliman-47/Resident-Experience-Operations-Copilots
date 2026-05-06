@@ -28,7 +28,7 @@ st.caption("Step 6: hardening (PII masking, logging, RAG guardrails)")
 
 with st.expander("Unified schema (normalized output)"):
     st.code(
-        "source_type, source_id, property_id, unit_id, resident_id, timestamp, text",
+        "source_type, source_id, property_id, building_id, unit_id, resident_id, timestamp, text",
         language="text",
     )
 
